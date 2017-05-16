@@ -20,29 +20,31 @@ namespace SyntaxGeneration
     {
         static void Main(string[] args)
         {
+            //create main class tomorrow to output as console application
             var codeGen = new CodeGenerator();
 
             Console.WriteLine("Generating your code please wait");
             var newNode = codeGen.GenerateComplexCode();
 
             var assemblyName = Path.GetRandomFileName();
-            var references = new MetadataReference[]
+            var references = new List<MetadataReference>
             {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.GetExecutingAssembly().Location), 
+                MetadataReference.CreateFromFile(Assembly.GetExecutingAssembly().Location),
+                MetadataReference.CreateFromFile(Assembly.ReflectionOnlyLoad("Microsoft.Azure.WebJobs").Location)
             };
-            
+
             var compilation = CSharpCompilation.Create(
                 assemblyName,
                 syntaxTrees: new[] { newNode.SyntaxTree },
-                references: references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                references: references.ToArray(),
+                options: new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
 
             using (var memoryStream = new MemoryStream())
             {
-                var result = compilation.Emit(memoryStream);
+                var result = compilation.Emit("test");
 
                 if (!result.Success)
                 {
