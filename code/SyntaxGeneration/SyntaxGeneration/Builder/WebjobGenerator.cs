@@ -10,12 +10,12 @@ namespace SyntaxGeneration.Builder
     {
         private readonly SyntaxGenerator _syntaxGenerator;
 
-        public WebjobGenerator(AdhocWorkspace workspace)
+        public WebjobGenerator(SyntaxGenerator syntaxGenerator)
         {
-            _syntaxGenerator = SyntaxGenerator.GetGenerator(workspace, LanguageNames.CSharp);
+            _syntaxGenerator = syntaxGenerator;
         }
 
-        public SyntaxNode[] AddUsingStatements(string[] usingStatements)
+        public SyntaxNode[] AddUsingStatements(params string[] usingStatements)
         {
             var synataxNodes = new List<SyntaxNode>();
             foreach (var usingStatement in usingStatements)
@@ -138,7 +138,7 @@ namespace SyntaxGeneration.Builder
             return _syntaxGenerator.InvocationExpression(method, arguements);
         }
 
-        public SyntaxNode[] CreateArguements(string[] arguementNames)
+        public SyntaxNode[] CreateArguements(params string[] arguementNames)
         {
             var syntaxNodes = new List<SyntaxNode>();
             foreach (var arguementName in arguementNames)
