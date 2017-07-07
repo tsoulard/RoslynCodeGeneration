@@ -153,12 +153,12 @@ namespace SyntaxGeneration.Builder
 
             //new private generic class field
             var genericClassField = _syntaxGenerator.FieldDeclaration("_genericClass",
-                _syntaxGenerator.IdentifierName("GenericClass"), Accessibility.Private, DeclarationModifiers.ReadOnly);
+                _syntaxGenerator.IdentifierName("GenericClass"), Accessibility.Private, DeclarationModifiers.Static);
 
             //constructor main code
             var constructorBody = _syntaxGenerator.AssignmentStatement(_syntaxGenerator.IdentifierName("_genericClass"), _syntaxGenerator.IdentifierName("genericClass"));
             //constructor method generation
-            var constructor = _syntaxGenerator.ConstructorDeclaration("TotalGetter",
+            var constructor = _syntaxGenerator.ConstructorDeclaration("Program",
                 new[]
                 {
                     _syntaxGenerator.ParameterDeclaration("genericClass",
@@ -197,13 +197,25 @@ namespace SyntaxGeneration.Builder
 
             var methodDeclartion = _syntaxGenerator.MethodDeclaration("GetCalculatedPrice",
                 new[] {priceOneField, priceTwoField}, null, _syntaxGenerator.TypeExpression(SpecialType.System_Int32),
-                Accessibility.Public, DeclarationModifiers.None,
+                Accessibility.Public, DeclarationModifiers.Static,
                 new[] {totalField, writeLineExpression, returnStatement});
 
+            var methodName = _syntaxGenerator.IdentifierName("GetCalculatedPrice");
 
-            var members = new[] {genericClassField, constructor, methodDeclartion};
+            var calculationArgumentsOne = _syntaxGenerator.Argument(RefKind.None, _syntaxGenerator.LiteralExpression(6));
+            var calculationArgumentsTwo = _syntaxGenerator.Argument(RefKind.None, _syntaxGenerator.LiteralExpression(12));
 
-            var classDefinition = _syntaxGenerator.ClassDeclaration("TotalGetter", null, Accessibility.Public,
+            var methodCall =
+                _syntaxGenerator.InvocationExpression(methodName, calculationArgumentsOne, calculationArgumentsTwo);
+
+            var mainMethod = _syntaxGenerator.MethodDeclaration("Main", null, null,
+                null, Accessibility.NotApplicable,
+                DeclarationModifiers.Static, new[] { methodCall });
+
+
+            var members = new[] {genericClassField, constructor, mainMethod, methodDeclartion};
+
+            var classDefinition = _syntaxGenerator.ClassDeclaration("Program", null, Accessibility.Public,
                 DeclarationModifiers.None, null, null, members);
 
             var nameSpaceDecleration = _syntaxGenerator.NamespaceDeclaration("MyNameSpace", classDefinition);

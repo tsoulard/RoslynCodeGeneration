@@ -3,14 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
 using SyntaxGeneration.Builder;
 using SyntaxGeneration.Service;
 
@@ -18,6 +12,10 @@ namespace SyntaxGeneration
 {
     class Program
     {
+        public Program()
+        {
+            
+        }
         static void Main(string[] args)
         {
             //create main class tomorrow to output as console application
@@ -25,6 +23,8 @@ namespace SyntaxGeneration
 
             Console.WriteLine("Generating your code please wait");
             var newNode = codeGen.GenerateComplexCode();
+
+            Console.WriteLine(newNode);
 
             var assemblyName = Path.GetRandomFileName();
             var references = new List<MetadataReference>
@@ -44,7 +44,9 @@ namespace SyntaxGeneration
 
             using (var memoryStream = new MemoryStream())
             {
-                var result = compilation.Emit("test");
+                var directory = Directory.GetCurrentDirectory();
+                var path = Path.Combine(directory, "test");
+                var result = compilation.Emit(path);
 
                 if (!result.Success)
                 {
@@ -63,7 +65,7 @@ namespace SyntaxGeneration
                     memoryStream.Seek(0, SeekOrigin.Begin);
                     var assembly = Assembly.Load(memoryStream.ToArray());
 
-                    var type = assembly.GetType("MyNameSpace.TotalGetter");
+                    var type = assembly.GetType("MyNameSpace.Program");
                     var instance = Activator.CreateInstance(type, new GenericClass());
                     
                     var returnResult = (int)type.InvokeMember("GetCalculatedPrice",
