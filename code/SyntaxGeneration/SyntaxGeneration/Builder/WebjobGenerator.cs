@@ -10,9 +10,8 @@ namespace SyntaxGeneration.Builder
     {
         private readonly SyntaxGenerator _syntaxGenerator;
 
-        public WebjobGenerator()
+        public WebjobGenerator(AdhocWorkspace workspace)
         {
-            var workspace = new AdhocWorkspace();
             _syntaxGenerator = SyntaxGenerator.GetGenerator(workspace, LanguageNames.CSharp);
         }
 
@@ -29,13 +28,78 @@ namespace SyntaxGeneration.Builder
 
         public SyntaxNode ClassFieldGeneration(string fieldName, string className, Accessibility type, DeclarationModifiers declarationModifier)
         {
-
-            _syntaxGenerator
-
             return _syntaxGenerator.FieldDeclaration(fieldName, _syntaxGenerator.IdentifierName(className), type,
                 declarationModifier);
         }
 
+        public SyntaxNode MethodDecleration(string methodName, SyntaxNode[] parameters, string returnType,
+            Accessibility type, DeclarationModifiers declarationModifier = default(DeclarationModifiers),
+            params SyntaxNode[] statements)
+        {
+            var returnTypeNode = string.IsNullOrEmpty(returnType) ? null : _syntaxGenerator.IdentifierName(returnType);
+
+            var method = _syntaxGenerator.MethodDeclaration(methodName, parameters, null, returnTypeNode, type,
+                declarationModifier, statements);
+
+            return method;
+        }
+
+        public SyntaxNode LinqQuery(string variableName, string linqName, string identifierName, params SyntaxNode[] syntaxNodes)
+        {
+            var lambda = _syntaxGenerator.VoidReturningLambdaExpression(identifierName, syntaxNodes);
+
+            var method = AccessMethod(variableName, linqName, lambda);
+
+            return method;
+        }
+
+        public SyntaxNode IfEqualsStatement(string variableOne, string variableTwo, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
+        {
+            var condition = _syntaxGenerator.ValueEqualsExpression(_syntaxGenerator.IdentifierName(variableOne), _syntaxGenerator.IdentifierName(variableTwo));
+            var ifStatement = _syntaxGenerator.IfStatement(condition, trueBlocks, falseBlocks);
+
+            return ifStatement;
+        }
+
+        public SyntaxNode IfEqualsStatement(string variable, object item, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
+        {
+            var condition = _syntaxGenerator.ValueEqualsExpression(_syntaxGenerator.IdentifierName(variable), _syntaxGenerator.LiteralExpression(item));
+            var ifStatement = _syntaxGenerator.IfStatement(condition, trueBlocks, falseBlocks);
+
+            return ifStatement;
+        }
+
+        public SyntaxNode IfGreaterThanExpression(string variableOne, string variableTwo, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
+        {
+            var condition = _syntaxGenerator.GreaterThanExpression(_syntaxGenerator.IdentifierName(variableOne), _syntaxGenerator.IdentifierName(variableTwo));
+            var ifStatement = _syntaxGenerator.IfStatement(condition, trueBlocks, falseBlocks);
+
+            return ifStatement;
+        }
+
+        public SyntaxNode IfGreaterThanExpression(string variable, object item, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
+        {
+            var condition = _syntaxGenerator.GreaterThanExpression(_syntaxGenerator.IdentifierName(variable), _syntaxGenerator.LiteralExpression(item));
+            var ifStatement = _syntaxGenerator.IfStatement(condition, trueBlocks, falseBlocks);
+
+            return ifStatement;
+        }
+
+        public SyntaxNode IfLessThanExpression(string variableOne, string variableTwo, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
+        {
+            var condition = _syntaxGenerator.LessThanExpression(_syntaxGenerator.IdentifierName(variableOne), _syntaxGenerator.IdentifierName(variableTwo));
+            var ifStatement = _syntaxGenerator.IfStatement(condition, trueBlocks, falseBlocks);
+
+            return ifStatement;
+        }
+
+        public SyntaxNode IfLessThanExpression(string variable, object item, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
+        {
+            var condition = _syntaxGenerator.LessThanExpression(_syntaxGenerator.IdentifierName(variable), _syntaxGenerator.LiteralExpression(item));
+            var ifStatement = _syntaxGenerator.IfStatement(condition, trueBlocks, falseBlocks);
+
+            return ifStatement;
+        }
 
         public SyntaxNode ConstructorGeneration(string className, List<ConstructorAssignmentModel> constructorAssignmentModels, Accessibility accessibilityType, DeclarationModifiers declaration)
         {
@@ -66,7 +130,7 @@ namespace SyntaxGeneration.Builder
             return constructor;
         }
 
-        public SyntaxNode AccessMethod(string variableName, string methodName, SyntaxNode[] arguements)
+        public SyntaxNode AccessMethod(string variableName, string methodName, params SyntaxNode[] arguements)
         {
             var method = _syntaxGenerator.MemberAccessExpression(_syntaxGenerator.IdentifierName(variableName),
                 _syntaxGenerator.IdentifierName(methodName));
@@ -96,11 +160,54 @@ namespace SyntaxGeneration.Builder
             return _syntaxGenerator.AddExpression(_syntaxGenerator.IdentifierName(valueOne),
                 _syntaxGenerator.IdentifierName(valueTwo));
         }
-        
+
+        public SyntaxNode AddissionExpression(object valueOne, object valueTwo)
+        {
+            return _syntaxGenerator.AddExpression(_syntaxGenerator.LiteralExpression(valueOne),
+                _syntaxGenerator.LiteralExpression(valueTwo));
+        }
+
+        public SyntaxNode SubtractExpression(string valueOne, string valueTwo)
+        {
+            return _syntaxGenerator.SubtractExpression(_syntaxGenerator.IdentifierName(valueOne),
+                _syntaxGenerator.IdentifierName(valueTwo));
+        }
+
+        public SyntaxNode SubtractExpression(object valueOne, object valueTwo)
+        {
+            return _syntaxGenerator.SubtractExpression(_syntaxGenerator.LiteralExpression(valueOne),
+                _syntaxGenerator.LiteralExpression(valueTwo));
+        }
+
+        public SyntaxNode MultiplicationExpression(string valueOne, string valueTwo)
+        {
+            return _syntaxGenerator.MultiplyExpression(_syntaxGenerator.IdentifierName(valueOne),
+                _syntaxGenerator.IdentifierName(valueTwo));
+        }
+
+        public SyntaxNode MultiplicationExpression(object valueOne, object valueTwo)
+        {
+            return _syntaxGenerator.MultiplyExpression(_syntaxGenerator.LiteralExpression(valueOne),
+                _syntaxGenerator.LiteralExpression(valueTwo));
+        }
+
+        public SyntaxNode DivideExpression(string valueOne, string valueTwo)
+        {
+            return _syntaxGenerator.DivideExpression(_syntaxGenerator.IdentifierName(valueOne),
+                _syntaxGenerator.IdentifierName(valueTwo));
+        }
+
+        public SyntaxNode DivideExpression(object valueOne, object valueTwo)
+        {
+            return _syntaxGenerator.DivideExpression(_syntaxGenerator.LiteralExpression(valueOne),
+                _syntaxGenerator.LiteralExpression(valueTwo));
+        }
+
         public SyntaxNode ParameterGeneration(string parameterName, string className)
         {
             return _syntaxGenerator.ParameterDeclaration(parameterName, _syntaxGenerator.IdentifierName(className));
         }
+
         public SyntaxNode ParameterGeneration(string parameterName, SpecialType type)
         {
             return _syntaxGenerator.ParameterDeclaration(parameterName, _syntaxGenerator.TypeExpression(type));
