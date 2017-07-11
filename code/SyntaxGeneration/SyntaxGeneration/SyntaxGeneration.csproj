@@ -207,8 +207,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builder\WebjobGenerator.cs" />
+    <Compile Include="Builder\CalculationGenerator.cs" />
+    <Compile Include="Builder\IfStatementGenerator.cs" />
+    <Compile Include="Models\ConstructorAssignmentModel.cs" />
     <Compile Include="Builder\CodeGenerator.cs" />
+    <Compile Include="Builder\CodeGeneratorPlayground.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

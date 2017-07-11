@@ -5,11 +5,11 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace SyntaxGeneration.Builder
 {
-    public class CodeGenerator
+    public class CodeGeneratorPlayground
     {
         private readonly SyntaxGenerator _syntaxGenerator;
 
-        public CodeGenerator()
+        public CodeGeneratorPlayground()
         {
             var workspace = new AdhocWorkspace();
             _syntaxGenerator = SyntaxGenerator.GetGenerator(workspace, LanguageNames.CSharp);

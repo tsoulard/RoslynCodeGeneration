@@ -114,5 +114,16 @@ namespace SyntaxGeneration.Builder
         {
             return _syntaxGenerator.LocalDeclarationStatement(variableName, node);
         }
+
+
+        public SyntaxNode ParameterGeneration(string parameterName, string className)
+        {
+            return _syntaxGenerator.ParameterDeclaration(parameterName, _syntaxGenerator.IdentifierName(className));
+        }
+
+        public SyntaxNode ParameterGeneration(string parameterName, SpecialType type)
+        {
+            return _syntaxGenerator.ParameterDeclaration(parameterName, _syntaxGenerator.TypeExpression(type));
+        }
     }
 }

@@ -6,7 +6,6 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using SyntaxGeneration.Builder;
-using SyntaxGeneration.Service;
 
 namespace SyntaxGeneration
 {
@@ -19,7 +18,7 @@ namespace SyntaxGeneration
         static void Main(string[] args)
         {
             //create main class tomorrow to output as console application
-            var codeGen = new CodeGenerator();
+            var codeGen = new CodeGeneratorPlayground();
 
             Console.WriteLine("Generating your code please wait");
             var newNode = codeGen.GenerateComplexCode();
