@@ -211,8 +211,6 @@
     <Compile Include="Builder\CodeGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service\GenericClass.cs" />
-    <Compile Include="Template.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

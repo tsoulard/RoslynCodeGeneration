@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -15,6 +14,51 @@ namespace SyntaxGeneration.Builder
             _syntaxGenerator = syntaxGenerator;
         }
 
+        public SyntaxNode LinqQuery(string variableName, string linqName, string identifierName, params SyntaxNode[] syntaxNodes)
+        {
+            var lambda = _syntaxGenerator.VoidReturningLambdaExpression(identifierName, syntaxNodes);
+
+            var method = AccessMethod(variableName, linqName, lambda);
+
+            return method;
+        }
+
+        //Class Expressions
+        public SyntaxNode ConstructorGeneration(string className, List<ConstructorAssignmentModel> constructorAssignmentModels, Accessibility accessibilityType, DeclarationModifiers declaration)
+        {
+            if (!constructorAssignmentModels.Any())
+            {
+                return null;
+            }
+
+            var construcorAssignmnetsNodes = new List<SyntaxNode>();
+            var construcorParameterDeclarationNodes = new List<SyntaxNode>();
+            foreach (var construcorAssignmnet in constructorAssignmentModels)
+            {
+                var assignmentStatement = _syntaxGenerator.AssignmentStatement(
+                    _syntaxGenerator.IdentifierName(construcorAssignmnet.GlobalVariableName),
+                    _syntaxGenerator.IdentifierName(construcorAssignmnet.VariableName));
+
+                construcorAssignmnetsNodes.Add(assignmentStatement);
+
+                var parameterDeclaration = ParameterGeneration(construcorAssignmnet.VariableName, construcorAssignmnet.ClassName);
+
+                construcorParameterDeclarationNodes.Add(parameterDeclaration);
+            }
+
+            var constructor = _syntaxGenerator.ConstructorDeclaration(className,
+                construcorParameterDeclarationNodes, accessibilityType,
+                declaration, null, construcorAssignmnetsNodes);
+
+            return constructor;
+        }
+
+        public SyntaxNode ClassFieldGeneration(string fieldName, string className, Accessibility type, DeclarationModifiers declarationModifier)
+        {
+            return _syntaxGenerator.FieldDeclaration(fieldName, _syntaxGenerator.IdentifierName(className), type,
+                declarationModifier);
+        }
+
         public SyntaxNode[] AddUsingStatements(params string[] usingStatements)
         {
             var synataxNodes = new List<SyntaxNode>();
@@ -26,10 +70,13 @@ namespace SyntaxGeneration.Builder
             return synataxNodes.ToArray();
         }
 
-        public SyntaxNode ClassFieldGeneration(string fieldName, string className, Accessibility type, DeclarationModifiers declarationModifier)
+        //Method Expressions
+        public SyntaxNode AccessMethod(string variableName, string methodName, params SyntaxNode[] arguements)
         {
-            return _syntaxGenerator.FieldDeclaration(fieldName, _syntaxGenerator.IdentifierName(className), type,
-                declarationModifier);
+            var method = _syntaxGenerator.MemberAccessExpression(_syntaxGenerator.IdentifierName(variableName),
+                _syntaxGenerator.IdentifierName(methodName));
+
+            return _syntaxGenerator.InvocationExpression(method, arguements);
         }
 
         public SyntaxNode MethodDecleration(string methodName, SyntaxNode[] parameters, string returnType,
@@ -44,15 +91,30 @@ namespace SyntaxGeneration.Builder
             return method;
         }
 
-        public SyntaxNode LinqQuery(string variableName, string linqName, string identifierName, params SyntaxNode[] syntaxNodes)
+        public SyntaxNode ReturnStatement(string variableName)
         {
-            var lambda = _syntaxGenerator.VoidReturningLambdaExpression(identifierName, syntaxNodes);
-
-            var method = AccessMethod(variableName, linqName, lambda);
-
-            return method;
+            return _syntaxGenerator.ReturnStatement(_syntaxGenerator.IdentifierName(variableName));
         }
 
+        //Variable Expressions
+        public SyntaxNode[] CreateArguements(params string[] arguementNames)
+        {
+            var syntaxNodes = new List<SyntaxNode>();
+            foreach (var arguementName in arguementNames)
+            {
+                var arguement = _syntaxGenerator.Argument(RefKind.None, _syntaxGenerator.IdentifierName(arguementName));
+                syntaxNodes.Add(arguement);
+            }
+
+            return syntaxNodes.ToArray();
+        }
+
+        public SyntaxNode CreateVariable(string variableName, SyntaxNode node)
+        {
+            return _syntaxGenerator.LocalDeclarationStatement(variableName, node);
+        }
+
+        //If Statements
         public SyntaxNode IfEqualsStatement(string variableOne, string variableTwo, SyntaxNode[] trueBlocks, SyntaxNode[] falseBlocks)
         {
             var condition = _syntaxGenerator.ValueEqualsExpression(_syntaxGenerator.IdentifierName(variableOne), _syntaxGenerator.IdentifierName(variableTwo));
@@ -101,60 +163,7 @@ namespace SyntaxGeneration.Builder
             return ifStatement;
         }
 
-        public SyntaxNode ConstructorGeneration(string className, List<ConstructorAssignmentModel> constructorAssignmentModels, Accessibility accessibilityType, DeclarationModifiers declaration)
-        {
-            if (!constructorAssignmentModels.Any())
-            {
-                return null;
-            }
-
-            var construcorAssignmnetsNodes = new List<SyntaxNode>();
-            var construcorParameterDeclarationNodes = new List<SyntaxNode>();
-            foreach (var construcorAssignmnet in constructorAssignmentModels)
-            {
-                var assignmentStatement = _syntaxGenerator.AssignmentStatement(
-                    _syntaxGenerator.IdentifierName(construcorAssignmnet.GlobalVariableName),
-                    _syntaxGenerator.IdentifierName(construcorAssignmnet.VariableName));
-
-                construcorAssignmnetsNodes.Add(assignmentStatement);
-
-                var parameterDeclaration = ParameterGeneration(construcorAssignmnet.VariableName, construcorAssignmnet.ClassName);
-
-                construcorParameterDeclarationNodes.Add(parameterDeclaration);
-            }
-
-            var constructor = _syntaxGenerator.ConstructorDeclaration(className,
-                construcorParameterDeclarationNodes, accessibilityType,
-                declaration, null, construcorAssignmnetsNodes);
-
-            return constructor;
-        }
-
-        public SyntaxNode AccessMethod(string variableName, string methodName, params SyntaxNode[] arguements)
-        {
-            var method = _syntaxGenerator.MemberAccessExpression(_syntaxGenerator.IdentifierName(variableName),
-                _syntaxGenerator.IdentifierName(methodName));
-
-            return _syntaxGenerator.InvocationExpression(method, arguements);
-        }
-
-        public SyntaxNode[] CreateArguements(params string[] arguementNames)
-        {
-            var syntaxNodes = new List<SyntaxNode>();
-            foreach (var arguementName in arguementNames)
-            {
-                var arguement = _syntaxGenerator.Argument(RefKind.None, _syntaxGenerator.IdentifierName(arguementName));
-                syntaxNodes.Add(arguement);
-            }
-
-            return syntaxNodes.ToArray();
-        }
-
-        public SyntaxNode CreateVariable(string variableName, SyntaxNode node)
-        {
-            return _syntaxGenerator.LocalDeclarationStatement(variableName, node);
-        }
-
+        //Calculation Expressions
         public SyntaxNode AddissionExpression(string valueOne, string valueTwo)
         {
             return _syntaxGenerator.AddExpression(_syntaxGenerator.IdentifierName(valueOne),
@@ -178,7 +187,7 @@ namespace SyntaxGeneration.Builder
             return _syntaxGenerator.SubtractExpression(_syntaxGenerator.LiteralExpression(valueOne),
                 _syntaxGenerator.LiteralExpression(valueTwo));
         }
-
+        
         public SyntaxNode MultiplicationExpression(string valueOne, string valueTwo)
         {
             return _syntaxGenerator.MultiplyExpression(_syntaxGenerator.IdentifierName(valueOne),
@@ -212,6 +221,8 @@ namespace SyntaxGeneration.Builder
         {
             return _syntaxGenerator.ParameterDeclaration(parameterName, _syntaxGenerator.TypeExpression(type));
         }
+
+        // Data access expressions here 
     }
 
     public class ConstructorAssignmentModel

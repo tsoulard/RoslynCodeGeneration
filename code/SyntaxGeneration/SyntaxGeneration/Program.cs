@@ -66,12 +66,11 @@ namespace SyntaxGeneration
                     var assembly = Assembly.Load(memoryStream.ToArray());
 
                     var type = assembly.GetType("MyNameSpace.Program");
-                    var instance = Activator.CreateInstance(type, new GenericClass());
                     
                     var returnResult = (int)type.InvokeMember("GetCalculatedPrice",
                         BindingFlags.Default | BindingFlags.InvokeMethod,
                         null,
-                        instance,
+                        null,
                         new object[] { 18, 5 });
                 }
             }
